@@ -23,9 +23,9 @@
  */
 int  sum_naive(int n, int *a) {
     int  sum = 0;
-	  for (int i = 0; i < n; i++) {
-		    sum += a[i];
-	  }
+      for (int i = 0; i < n; i++) {
+            sum += a[i];
+      }
     return sum;
 }
 
@@ -44,7 +44,7 @@ int  sum_sse(int n, int *a) {
     _mm_storeu_si128((__m128i *)s4,sum4);
     result =s4[0]+s4[1]+s4[2]+s4[3];
     for (int i=n/4*4;i<n;i++) {
-    	result+= a[i];
+        result+= a[i];
     }  
     return result;
 }
@@ -75,8 +75,21 @@ int  sum_avx(int n, int *arr) {
 
     // --- Handle the remainder elements (if N is not a multiple of 8) ---
 
+    for (int i = 0; i < n/8*8; i += 8) {
+        __m256i temp = _mm256_loadu_si256((__m256i *)(arr + i));
+        vec_sum = _mm256_add_epi32(vec_sum, temp);
+    }
+    
+    int temp_sum[8] __attribute__((aligned(32)));
+    _mm256_storeu_si256((__m256i *)temp_sum, vec_sum);
+    
+    final_sum = temp_sum[0] + temp_sum[1] + temp_sum[2] + temp_sum[3] +
+                temp_sum[4] + temp_sum[5] + temp_sum[6] + temp_sum[7];
+    
+    for (int i = n/8*8; i < n; i++) {
+        final_sum += arr[i];
+    }
+
 
     return final_sum;
 }
-
-
